@@ -1,5 +1,5 @@
 
-This page is to explain the process of portforwarding and proxy etc. Basically from scratch to full deployments. 
+A guide to port forwarding and exposing deployments to your LAN. 
 
 
 Firstly, let's start with just a generic pod.
@@ -8,7 +8,7 @@ Firstly, let's start with just a generic pod.
 Let's double check that this is working correctly.
 `kubectl get pods -o wide`
 
-![[Pasted image 20240523113951.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523113951.png)
 
 Cool, so we have our pod running. Let's just test the networking connection. My Node is running on `192.168.0.249`. We can also check this by using `kubectl get nodes -o wide`.
 
@@ -17,22 +17,22 @@ Cool, so we have our pod running. Let's just test the networking connection. My 
 Let's expose that pod and try a `curl` command. 
 `kubectl port-forward pod/nginx 8080:80`
 
-![[Pasted image 20240523114922.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523114922.png)
 
 In my case, I have to open a new SSH window, to keep the `port-forward` alive. Then as below, use `curl localhost:8080`.
 
-![[Pasted image 20240523115009.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523115009.png)
 
 So we can see that the access is allowed from the `localhost`. But this is where I started getting confused. We need to utilise the `--address` parameter in order to change what address to listen on. When we ran the first `port-forward` command, we only exposed it to the `localhost`. Hence the `127.0.0.1` address. 
 
 So let's cancel out of the original `port-forward` on our first SSH window, using `CTRL+C` and let's run another command.
 
 We'll use `kubectl port-forward --address 192.168.0.249 pod/nginx 8080:80` this time and let's see the results.
-![[Pasted image 20240523115411.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523115411.png)
 
 Note that the output mentions the IP Address and is no longer `localhost`. Now if we try from another PC, or device on the LAN, we can access it by browsing to `192.168.0.249:8080`
 
-![[Pasted image 20240523115537.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523115537.png)
 
 Great! We now have access to our pod from outside of the Node. But what do we do when we're trying to keep this as a permanent solution? We can't have an SSH window open with the `port-forward` command running forever. That's not very stable. So let's cancel out of the current `port-forward` command and see what else we can do, again, using `CTRL+C` to break out of it. 
 
@@ -69,15 +69,15 @@ Take note under the `spec` section, or more specifically `replicas: 1`.  This me
 
 So let's deploy this by using `kubectl apply -f ./run-my-nginx.yaml`, and then let's view our deployment by using `kubectl get deployment/my-nginx`.
 
-![[Pasted image 20240523135652.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523135652.png)
 
 The pods are available, and in a Ready state. Let's try and see if we can can use `curl` to get the data from the landing page. We'll use `kubectl get pods -o wide` again to find the ip address of the pods.
 
-![[Pasted image 20240523140115.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523140115.png)
 
 Let's try the `curl` command now. 
 
-![[Pasted image 20240523140226.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523140226.png)
 
 So, we were able to access the pods this time without port-forward, why is that? Well, a deployment is different to just deploying a new pod. Let's quickly cover this to enhance our understanding.
 
@@ -93,7 +93,7 @@ So, we were able to access the pods this time without port-forward, why is that?
 
 So to summarize, we don't need to use `port-forward` with deployments because the pods will be given a static IP and port that can be accessed from the node. However, on my main pc, let me try browse to the host IP with the port and see what happens.
 
-![[Pasted image 20240523140927.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523140927.png)
 
 We get a failure message. So whilst the cluster has access to the pods, that's because it's opened using the `ClusterIP` service. Which means it can be accessed from within the node and that's it. And to add to that, here is a snippet from the official docs explaining the `ClusterIP` service.
 
@@ -105,7 +105,7 @@ So let's use `kubectl get pods -o wide` again to view the names of our pods in t
 
 I'll use the next command, `kubectl exec -it my-nginx-684dd4dcd4-tbr4z -- bash` to create an interactive window, inside the pod and execute `bash`. The `--` is the parameter separator that Kubernetes recognises. 
 
-![[Pasted image 20240523143410.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523143410.png)
 
 As you can see, we're now inside the pod. Let's browse to the location of the html that nginx uses. Typically it is found in `/usr/share/nginx/html`. Once in the folder, we'll see the `index.html` page. 
 
@@ -114,11 +114,12 @@ Let's edit this to display the IP address of the pod we're currently inside. I'l
 Now we'll just double check our service IP address again by using `kubectl get svc`, in my case the IP is `10.43.225.30` so I'll use the command `curl 10.43.225.300` and see the results.
 
 The first attempt hit the second pod;
-![[Pasted image 20240523145314.png]]
+
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523145314.png)
 
 We can tell because our changes to the `HTML` are not present. Let's try it again and see what happens.
 
-![[Pasted image 20240523145344.png]]
+![alt text](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523145344.png)
 
 Great! We hit the second pod. However, it's worth noting that this isn't exactly the best use case for load balancing. But it works for our internal setup. If you were using Azure or AWS, then you'd need to look into the service `LoadBalancer` and go from there. That's a bit out of scope for our current situation however, although we will cover a type of `LoadBalancer` next!
 
@@ -189,6 +190,7 @@ Delete the service using: `kubectl delete service/my-nginx`
 The below step may be required if MetalLB wasn't fully configured before applying the service. Though I personally thought it finished, it didn't and so this step will help you clean up if not.
 
 **If you have trouble deleting the service.**
+
 Then we need to make a change to the nginx service. Use `kubectl edit service/my-nginx` and delete the line that says 'Finalizer'. This edit tool uses VI so you will need to save using `:wq!`. Once done, we can delete the service. 
 
 Run a quick `kubectl get all` to check if anything was left behind.
