@@ -12,7 +12,7 @@ Let's double check that this is working correctly.
 
 Cool, so we have our pod running. Let's just test the networking connection. My Node is running on `192.168.0.249`. We can also check this by using `kubectl get nodes -o wide`.
 
-![[Kubernetes/attachments/Pasted image 20240523114247.png]]
+[![[Kubernetes/attachments/Pasted image 20240523114247.png]]](https://github.com/Steven-Notridge/Guides/blob/main/Kubernetes/attachments/Pasted%20image%2020240523114247.png)
 
 Let's expose that pod and try a `curl` command. 
 `kubectl port-forward pod/nginx 8080:80`
